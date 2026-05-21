@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   title: "Bhargava Kishore Tsavatapalli — Node.js Backend Developer",
   description:
     "Portfolio of Bhargava Kishore Tsavatapalli, a Node.js backend developer based in Hyderabad, building scalable REST APIs, event-driven microservices, and cloud-native systems.",
-  metadataBase: new URL("https://bhargavnaidu-af38d.web.app"),
+  metadataBase: new URL("https://www.tbkpro.in"),
   alternates: {
     canonical: "/",
   },

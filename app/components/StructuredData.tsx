@@ -1,4 +1,4 @@
-const SITE_URL = "https://bhargavnaidu-af38d.web.app";
+const SITE_URL = "https://www.tbkpro.in";
 
 export default function StructuredData() {
   const person = {
@@ -6,7 +6,7 @@ export default function StructuredData() {
     "@type": "Person",
     name: "Bhargava Kishore Tsavatapalli",
     url: SITE_URL,
-    image: `${SITE_URL}/profile.png`,
+    image: `${SITE_URL}/profile.jpg`,
     jobTitle: "Node.js Backend Developer",
     worksFor: {
       "@type": "Organization",

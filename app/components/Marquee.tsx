@@ -29,10 +29,10 @@ export default function Marquee() {
             key={i}
             className="flex items-baseline gap-12 text-ink"
           >
-            <span className="display text-3xl md:text-5xl tracking-tightest">
+            <span className="display text-xl md:text-5xl tracking-tightest">
               {it}
             </span>
-            <span className="display-italic text-sienna text-3xl md:text-5xl">
+            <span className="display-italic text-sienna text-xl md:text-5xl">
               "
             </span>
           </span>

@@ -16,7 +16,7 @@ export default function Experience() {
   return (
     <section
       id="experience"
-      className="relative px-6 md:px-10 max-w-[1440px] mx-auto py-28 md:py-40"
+      className="relative px-6 md:px-10 max-w-[1440px] mx-auto py-4 md:py-4"
     >
       <div className="grid grid-cols-12 gap-y-12 md:gap-x-8">
         <Reveal className="col-span-12 md:col-span-2">

@@ -9,7 +9,7 @@ export default function Footer() {
   return (
     <footer
       id="contact"
-      className="relative bg-ink text-parchment px-6 md:px-10 pt-28 md:pt-36 pb-10 mt-12 overflow-hidden"
+      className="relative bg-ink text-parchment px-6 md:px-10 pt-20 md:pt-36 pb-10 mt-0 md:mt-12 overflow-hidden"
     >
       {/* Decorative giant glyph */}
       <motion.div
@@ -17,7 +17,7 @@ export default function Footer() {
         whileInView={reduce ? { opacity: 0.05 } : { opacity: 0.05, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-        className="display absolute -bottom-24 left-0 right-0 text-center text-[42vw] leading-none tracking-tightest pointer-events-none select-none"
+        className="display absolute -bottom-2 md:-bottom-24 left-0 right-0 text-center text-[42vw] leading-none tracking-tightest pointer-events-none select-none"
       >
         tbk
       </motion.div>
@@ -79,21 +79,21 @@ export default function Footer() {
                   Download CV ↓
                 </a>
                 <a
-                  href="https://bhargavnaidu-af38d.web.app"
+                  href="https://askai.tbkpro.in"
                   target="_blank"
                   rel="noreferrer"
                   className="block mt-1 text-xl md:text-2xl underline-link"
                 >
-                  bhargavnaidu-af38d.web.app ↗
+                  AskAi ↗
                 </a>
               </div>
             </div>
           </div>
 
-          <div className="col-span-12 md:col-span-2 mono-label !text-ember mt-20 md:mt-24">
+          <div className="col-span-12 md:col-span-2 mono-label !text-ember mt-12 md:mt-24">
             08 — Message
           </div>
-          <div className="col-span-12 md:col-span-10 mt-20 md:mt-24">
+          <div className="col-span-12 md:col-span-10 mt-2 md:mt-24">
             <div className="mb-10 max-w-xl text-parchment/75 text-[15px] md:text-base leading-relaxed">
               Have a role, a project, or an idea worth talking about? Send a
               note — I read every message and reply within a day or two.
@@ -107,7 +107,7 @@ export default function Footer() {
             © 2026 · Bhargava Kishore Tsavatapalli · Hyderabad, IN
           </div>
           <div className="flex items-center gap-3">
-            <span>Built with Next.js</span>
+            {/* <span>Built with Next.js</span> */}
           </div>
         </div>
       </div>

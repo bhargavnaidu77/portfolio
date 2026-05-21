@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 
 const links = [
   { href: "#about", label: "Practice" },
@@ -12,24 +11,6 @@ const links = [
 ];
 
 export default function Navigation() {
-  const [time, setTime] = useState<string>("");
-
-  useEffect(() => {
-    const fmt = () => {
-      const now = new Date();
-      const opts: Intl.DateTimeFormatOptions = {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-        timeZone: "Asia/Kolkata",
-      };
-      setTime(new Intl.DateTimeFormat("en-GB", opts).format(now) + " IST");
-    };
-    fmt();
-    const id = setInterval(fmt, 30_000);
-    return () => clearInterval(id);
-  }, []);
-
   return (
     <motion.header
       initial={{ opacity: 0, y: -12 }}
@@ -68,11 +49,14 @@ export default function Navigation() {
             Open to work
           </span>
           <span className="hidden sm:inline opacity-40">/</span>
-          <span className="hidden sm:inline tabular-nums">{time}</span>
+          <span className="hidden sm:inline tracking-wide">
+            Hyderabad, IN
+          </span>
           <a
             href="/Bhargava_Kishore_Resume.pdf"
             download
-            className="ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink text-ink bg-parchment hover:bg-ink hover:text-parchment transition-colors duration-300"
+            aria-label="Download CV"
+            className="ml-2 inline-flex items-center gap-1.5 px-3.5 py-2.5 border border-ink text-ink bg-parchment hover:bg-ink hover:text-parchment transition-colors duration-300"
           >
             <span>CV</span>
             <span aria-hidden>↓</span>

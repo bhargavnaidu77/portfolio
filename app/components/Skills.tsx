@@ -76,7 +76,7 @@ export default function Skills() {
   return (
     <section
       id="stack"
-      className="relative px-6 md:px-10 max-w-[1440px] mx-auto py-28 md:py-40"
+      className="relative px-6 md:px-10 max-w-[1440px] mx-auto py-0 md:py-0"
     >
       <div className="grid grid-cols-12 gap-y-12 md:gap-x-8 mb-16">
         <Reveal className="col-span-12 md:col-span-2">
@@ -112,7 +112,7 @@ export default function Skills() {
                     >
                       {it}
                       {i < g.items.length - 1 && (
-                        <span className="ml-6 text-rule" aria-hidden>
+                        <span className="ml-6 text-rule hidden sm:inline" aria-hidden>
                           ·
                         </span>
                       )}

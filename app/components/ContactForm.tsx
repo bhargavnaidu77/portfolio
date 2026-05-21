@@ -1,23 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
 type Status = "idle" | "sending" | "success" | "error";
+type FieldErrors = {
+  name?: string;
+  email?: string;
+  message?: string;
+};
 
 const ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+const MIN_TIME_ON_PAGE_MS = 3000;
+const COOLDOWN_MS = 60_000;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ContactForm() {
   const reduce = useReducedMotion();
   const [status, setStatus] = useState<Status>("idle");
-  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [statusMessage, setStatusMessage] = useState<string>("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const mountedAtRef = useRef<number>(0);
+  const lastSubmitAtRef = useRef<number>(0);
+
+  useEffect(() => {
+    mountedAtRef.current = Date.now();
+  }, []);
+
+  useEffect(() => {
+    if (status === "success") {
+      const timer = setTimeout(() => {
+        setStatus("idle");
+        setStatusMessage("");
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
+  function validate(data: FormData): FieldErrors {
+    const errors: FieldErrors = {};
+
+    const name = String(data.get("name") || "").trim();
+    const email = String(data.get("email") || "").trim();
+    const message = String(data.get("message") || "").trim();
+
+    if (!name) errors.name = "Please enter your name.";
+    else if (name.length < 2) errors.name = "Name is too short.";
+
+    if (!email) errors.email = "Please enter your email.";
+    else if (!EMAIL_REGEX.test(email))
+      errors.email = "Please enter a valid email.";
+
+    if (!message) errors.message = "Please write a message.";
+    else if (message.length < 10)
+      errors.message = "Message should be at least 10 characters.";
+
+    return errors;
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (status === "sending" || status === "success") return;
+
     if (!ACCESS_KEY) {
       setStatus("error");
-      setErrorMessage(
+      setStatusMessage(
         "Contact form is not configured. Please email directly."
       );
       return;
@@ -28,16 +76,45 @@ export default function ContactForm() {
 
     if (data.get("botcheck")) return;
 
+    const elapsed = Date.now() - mountedAtRef.current;
+    if (elapsed < MIN_TIME_ON_PAGE_MS) {
+      setStatus("error");
+      setStatusMessage("Please take a moment before sending.");
+      return;
+    }
+
+    const sinceLast = Date.now() - lastSubmitAtRef.current;
+    if (lastSubmitAtRef.current > 0 && sinceLast < COOLDOWN_MS) {
+      const wait = Math.ceil((COOLDOWN_MS - sinceLast) / 1000);
+      setStatus("error");
+      setStatusMessage(
+        `Please wait ${wait} seconds before sending another message.`
+      );
+      return;
+    }
+
+    const errors = validate(data);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setStatus("error");
+      setStatusMessage("Please fix the highlighted fields.");
+      return;
+    }
+
+    setFieldErrors({});
     setStatus("sending");
-    setErrorMessage("");
+    setStatusMessage("");
+    lastSubmitAtRef.current = Date.now();
 
     const payload = {
       access_key: ACCESS_KEY,
-      name: data.get("name"),
-      email: data.get("email"),
-      subject: data.get("subject") || "New message from portfolio",
-      message: data.get("message"),
-      from_name: "Portfolio · bhargavnaidu-af38d.web.app",
+      name: String(data.get("name") || "").trim(),
+      email: String(data.get("email") || "").trim(),
+      subject:
+        String(data.get("subject") || "").trim() ||
+        "New message from portfolio",
+      message: String(data.get("message") || "").trim(),
+      from_name: "Portfolio · www.tbkpro.in",
     };
 
     try {
@@ -54,19 +131,36 @@ export default function ContactForm() {
 
       if (result.success) {
         setStatus("success");
+        setStatusMessage("Thanks — message received. I'll reply soon.");
         form.reset();
       } else {
         setStatus("error");
-        setErrorMessage(result.message || "Something went wrong.");
+        setStatusMessage(result.message || "Something went wrong.");
       }
     } catch {
       setStatus("error");
-      setErrorMessage("Network error. Please try again.");
+      setStatusMessage("Network error. Please try again.");
     }
   }
 
-  const fieldClass =
-    "w-full bg-transparent border-0 border-b border-parchment/25 text-parchment placeholder:text-parchment/35 py-3 text-[15px] md:text-base focus:outline-none focus:border-ember transition-colors duration-300";
+  function clearFieldError(field: keyof FieldErrors) {
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  }
+
+  const isSubmitting = status === "sending";
+  const isSuccess = status === "success";
+  const buttonDisabled = isSubmitting || isSuccess;
+
+  const baseField =
+    "w-full bg-transparent border-0 border-b py-3 text-[15px] md:text-base text-parchment placeholder:text-parchment/35 focus:outline-none transition-colors duration-300";
+  const fieldClass = (hasError?: string) =>
+    `${baseField} ${
+      hasError
+        ? "border-ember"
+        : "border-parchment/25 focus:border-ember"
+    }`;
 
   return (
     <motion.form
@@ -98,9 +192,22 @@ export default function ContactForm() {
           required
           maxLength={120}
           autoComplete="name"
-          className={fieldClass}
+          aria-invalid={Boolean(fieldErrors.name)}
+          aria-describedby={fieldErrors.name ? "cf-name-error" : undefined}
+          onChange={() => clearFieldError("name")}
+          disabled={buttonDisabled}
+          className={fieldClass(fieldErrors.name)}
           placeholder="Your name"
         />
+        {fieldErrors.name && (
+          <p
+            id="cf-name-error"
+            role="alert"
+            className="mono-label !text-ember mt-2"
+          >
+            {fieldErrors.name}
+          </p>
+        )}
       </div>
 
       <div>
@@ -114,13 +221,29 @@ export default function ContactForm() {
           required
           maxLength={200}
           autoComplete="email"
-          className={fieldClass}
+          aria-invalid={Boolean(fieldErrors.email)}
+          aria-describedby={fieldErrors.email ? "cf-email-error" : undefined}
+          onChange={() => clearFieldError("email")}
+          disabled={buttonDisabled}
+          className={fieldClass(fieldErrors.email)}
           placeholder="you@domain.com"
         />
+        {fieldErrors.email && (
+          <p
+            id="cf-email-error"
+            role="alert"
+            className="mono-label !text-ember mt-2"
+          >
+            {fieldErrors.email}
+          </p>
+        )}
       </div>
 
       <div className="md:col-span-2">
-        <label htmlFor="cf-subject" className="mono-label !text-ember/80 block">
+        <label
+          htmlFor="cf-subject"
+          className="mono-label !text-ember/80 block"
+        >
           Subject
         </label>
         <input
@@ -128,13 +251,17 @@ export default function ContactForm() {
           name="subject"
           type="text"
           maxLength={160}
-          className={fieldClass}
+          disabled={buttonDisabled}
+          className={fieldClass()}
           placeholder="What is this about? (optional)"
         />
       </div>
 
       <div className="md:col-span-2">
-        <label htmlFor="cf-message" className="mono-label !text-ember/80 block">
+        <label
+          htmlFor="cf-message"
+          className="mono-label !text-ember/80 block"
+        >
           Message
         </label>
         <textarea
@@ -143,19 +270,38 @@ export default function ContactForm() {
           required
           maxLength={4000}
           rows={5}
-          className={`${fieldClass} resize-none`}
+          aria-invalid={Boolean(fieldErrors.message)}
+          aria-describedby={
+            fieldErrors.message ? "cf-message-error" : undefined
+          }
+          onChange={() => clearFieldError("message")}
+          disabled={buttonDisabled}
+          className={`${fieldClass(fieldErrors.message)} resize-none`}
           placeholder="A few lines about what you'd like to build together…"
         />
+        {fieldErrors.message && (
+          <p
+            id="cf-message-error"
+            role="alert"
+            className="mono-label !text-ember mt-2"
+          >
+            {fieldErrors.message}
+          </p>
+        )}
       </div>
 
       <div className="md:col-span-2 flex flex-col md:flex-row md:items-center gap-5 md:gap-8 pt-2">
         <button
           type="submit"
-          disabled={status === "sending"}
-          className="group inline-flex items-center justify-center gap-2 px-5 py-3 bg-parchment text-ink hover:bg-ember hover:text-parchment transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={buttonDisabled}
+          className="group inline-flex items-center justify-center gap-2 px-5 py-3 bg-parchment text-ink hover:bg-ember hover:text-parchment transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-parchment disabled:hover:text-ink"
         >
-          <span className="mono-label !text-ink group-hover:!text-parchment transition-colors duration-300">
-            {status === "sending" ? "Sending…" : "Send message"}
+          <span className="mono-label !text-ink group-hover:!text-parchment group-disabled:group-hover:!text-ink transition-colors duration-300">
+            {isSubmitting
+              ? "Sending…"
+              : isSuccess
+              ? "Sent ✓"
+              : "Send message"}
           </span>
           <span
             aria-hidden
@@ -166,13 +312,9 @@ export default function ContactForm() {
         </button>
 
         <div className="mono-label min-h-[1.2em]" aria-live="polite">
-          {status === "success" && (
-            <span className="!text-ember">
-              Thanks — message received. I&apos;ll reply soon.
-            </span>
-          )}
+          {isSuccess && <span className="!text-ember">{statusMessage}</span>}
           {status === "error" && (
-            <span className="!text-ember">{errorMessage}</span>
+            <span className="!text-ember">{statusMessage}</span>
           )}
         </div>
       </div>
