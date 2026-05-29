@@ -91,21 +91,33 @@ const work: WorkProject[] = [
 
 const personal: PersonalProject[] = [
   {
+    name: "RyRa",
+    description:
+      "A B2B SaaS that lets website owners embed a streaming AI chat assistant via a React package or a one-line script tag. Handles multi-tenant workspaces, RAG over uploaded docs with pgvector, domain-locked API keys, plan-aware quotas, and Razorpay subscriptions — so customers ship the widget in minutes instead of building it for weeks.",
+    stack: [
+      "React",
+      "Node.js",
+      "TypeScript",
+      "PostgreSQL",
+      "pgvector",
+      "Razorpay",
+      "SSE",
+      "Docker",
+      "GHCR",
+      "GitHub Actions",
+    ],
+    live: "https://ryra.tbkpro.in",
+    accent: "sienna",
+    image: "/projects/RyRa.png",
+  },
+  {
     name: "AskAi",
     description:
       "An AI chatbot built on NVIDIA's hosted LLM endpoints. A lean Node.js + TypeScript backend handles prompt routing, streaming responses, and API-key safekeeping for a fast, focused chat experience.",
     stack: ["Node.js", "TypeScript", "NVIDIA AI"],
     live: "https://askai.tbkpro.in",
-    accent: "sienna",
-    image: "/projects/askai.jpg",
-  },
-  {
-    name: "Project Two",
-    description:
-      "Placeholder for a side build — could be a CLI, library, or weekend experiment. Update with thumbnail and copy.",
-    stack: ["Node.js", "Express", "PostgreSQL"],
-    github: "https://github.com/",
     accent: "moss",
+    image: "/projects/askai.jpg",
   },
   {
     name: "Project Three",
